@@ -15,15 +15,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet"
-import { 
-  isPast, 
-  isToday, 
-  set, 
+import {
+  isToday,
+  set,
   parse,
   format,
-  
   areIntervalsOverlapping,
-  addMinutes 
+  addMinutes
 } from "date-fns"
 import { Calendar } from "./ui/calendar"
 import { ptBR } from "date-fns/locale"
@@ -39,7 +37,6 @@ import { useRouter } from "next/navigation"
 import { Skeleton } from "./ui/skeleton"
 import { getBarberAvailableTimeSlots } from "../_data/get-barber-timeslots"
 import { Clock } from "lucide-react"
-
 
 interface Barber {
   id: string
@@ -86,106 +83,106 @@ type GetTimeListProps = {
   serviceDuration: number;
 };
 
-
 const getTimeList = ({ bookings, selectedDay, timeSlots, serviceDuration }: GetTimeListProps) => {
+  const now = new Date()
   return timeSlots.map((timeSlot) => {
-    // Converter o horário do slot para um objeto Date
-    const slotTime = parse(timeSlot.time, 'HH:mm', selectedDay);
+     // Converter o horário do slot para um objeto Date
+     const slotTime = parse(timeSlot.time, 'HH:mm', selectedDay);
 
-    // Verificar se o horário já passou (apenas para hoje)
-    const isPastTime = isPast(slotTime) && isToday(selectedDay);
+      // Verificar se o horário já passou (apenas para hoje)
+      const isPastTime = isToday(selectedDay) ? slotTime <= now : false
 
-    // Criar intervalo para o slot atual considerando a duração do serviço
-    const slotInterval = {
-      start: slotTime,
-      end: addMinutes(slotTime, serviceDuration),
-    };
-
-    // Verificar conflitos com reservas existentes
-    const hasConflict = bookings.some((booking) => {
-      const bookingInterval = {
-        start: booking.date,
-        end: addMinutes(booking.date, booking.service.duration),
+      // Criar intervalo para o slot atual considerando a duração do serviço
+      const slotInterval = {
+        start: slotTime,
+        end: addMinutes(slotTime, serviceDuration),
       };
 
-      return areIntervalsOverlapping(slotInterval, bookingInterval, {
-        inclusive: false,
-      });
-    });
- // Console log incremental para verificar booking, hasConflict e data formatada
-        bookings.forEach((booking) => {
-          console.log(
-            `Booking Start: ${format(booking.date, 'dd HH:mm', { locale: ptBR })}, 
-            Booking End: ${format(addMinutes(booking.date, serviceDuration), 'dd HH:mm', { locale: ptBR })}, 
-            Slot Start: ${format(slotInterval.start, 'dd HH:mm', { locale: ptBR })}, 
-            Slot End: ${format(slotInterval.end, 'dd HH:mm', { locale: ptBR })}, 
-            hasConflict: ${hasConflict}`
-          );
-        });
+      // Verificar conflitos com reservas existentes
+      const hasConflict = bookings.some((booking) => {
+        const bookingInterval = {
+          start: booking.date,
+          end: addMinutes(booking.date, booking.service.duration),
+        };
 
+        return areIntervalsOverlapping(slotInterval, bookingInterval, {
+          inclusive: false,
+        });
+      });
+      // Console log incremental para verificar booking, hasConflict e data formatada
+      bookings.forEach((booking) => {
+        console.log(
+          `Booking Start: ${format(booking.date, 'dd HH:mm', { locale: ptBR })}, 
+          Booking End: ${format(addMinutes(booking.date, serviceDuration), 'dd HH:mm', { locale: ptBR })}, 
+          Slot Start: ${format(slotInterval.start, 'dd HH:mm', { locale: ptBR })}, 
+          Slot End: ${format(slotInterval.end, 'dd HH:mm', { locale: ptBR })}, 
+          hasConflict: ${hasConflict}`
+        );
+      });
 
       return {
         ...timeSlot,
         isAvailable: !isPastTime && !hasConflict,
         hasConflict,
-      };
-      });
-      };
-
-  const ServiceItem = ({ service, barbershop, isClosed }: ServiceItemProps) => {
-    const { data } = useSession()
-    const router = useRouter()
-    const [signInDialogIsOpen, setSignInDialogIsOpen] = useState(false)
-    const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined)
-    const [selectedBarber, setSelectedBarber] = useState<string | undefined>(undefined)
-    const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined)
-    const [dayBookings, setDayBookings] = useState<BookingWithService[]>([])
-    const [bookingSheetIsOpen, setBookingSheetIsOpen] = useState(false)
-    const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
-    const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false)
-    const [isLoadingBarber, setIsLoadingBarber] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-    const [barbers, setBarbers] = useState<Barber[]>([])
-
-    useEffect(() => {
-      const fetchTimeSlots = async () => {
-        if (!selectedBarber || !selectedDay) return
-  
-        setIsLoadingTimeSlots(true)
-        try {
-          const slots = await getBarberAvailableTimeSlots(selectedBarber)
-          setTimeSlots(slots)
-        } catch (error) {
-          console.error("Failed to fetch time slots:", error)
-          toast.error("Erro ao carregar horários disponíveis")
-        } finally {
-          setIsLoadingTimeSlots(false)
-        }
       }
-  
-      fetchTimeSlots()
-    }, [selectedBarber, selectedDay])
+    })
+    .filter((timeSlot) => timeSlot.isAvailable) // Filtrar apenas horários disponíveis
+  }
 
-    useEffect(() => {
-      const fetch = async () => {
-        if (!selectedDay || !selectedBarber) return
-        const bookings = await getBookings({
-          date: selectedDay,
-          barberId: selectedBarber,
-        })
-        if(!bookings){
-          setDayBookings([])
-        }
-        setDayBookings(bookings)
+const ServiceItem = ({ service, barbershop, isClosed }: ServiceItemProps) => {
+  const { data } = useSession()
+  const router = useRouter()
+  const [signInDialogIsOpen, setSignInDialogIsOpen] = useState(false)
+  const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined)
+ const [selectedBarber, setSelectedBarber] = useState<string | undefined>(undefined)
+ const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined)
+  const [dayBookings, setDayBookings] = useState<BookingWithService[]>([])
+  const [bookingSheetIsOpen, setBookingSheetIsOpen] = useState(false)
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
+  const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false)
+  const [isLoadingBarber, setIsLoadingBarber] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [barbers, setBarbers] = useState<Barber[]>([])
+
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      if (!selectedBarber || !selectedDay) return
+
+      setIsLoadingTimeSlots(true)
+      try {
+        const slots = await getBarberAvailableTimeSlots(selectedBarber)
+        setTimeSlots(slots)
+      } catch (error) {
+        console.error("Failed to fetch time slots:", error)
+        toast.error("Erro ao carregar horários disponíveis")
+      } finally {
+        setIsLoadingTimeSlots(false)
       }
-      fetch()
-    }, [selectedDay, selectedBarber])
+    }
 
-    const selectedDate = useMemo(() => {
-      if (!selectedDay || !selectedTime) return
-      const [hours, minutes] = selectedTime.split(":").map(Number)
-      return set(selectedDay, { hours, minutes, seconds: 0, milliseconds: 0 })
-    }, [selectedDay, selectedTime])
+    fetchTimeSlots()
+  }, [selectedBarber, selectedDay])
+
+  useEffect(() => {
+    const fetch = async () => {
+      if (!selectedDay || !selectedBarber) return
+      const bookings = await getBookings({
+        date: selectedDay,
+        barberId: selectedBarber,
+      })
+      if(!bookings){
+        setDayBookings([])
+      }
+      setDayBookings(bookings)
+    }
+    fetch()
+  }, [selectedDay, selectedBarber])
+
+  const selectedDate = useMemo(() => {
+    if (!selectedDay || !selectedTime) return
+    const [hours, minutes] = selectedTime.split(":").map(Number)
+    return set(selectedDay, { hours, minutes, seconds: 0, milliseconds: 0 })
+  }, [selectedDay, selectedTime])
 
   const handleBookingClick = () => {
     if (data?.user) {
@@ -262,8 +259,7 @@ const getTimeList = ({ bookings, selectedDay, timeSlots, serviceDuration }: GetT
       serviceDuration: service.duration
     })
   }, [dayBookings, selectedDay, timeSlots, service.duration])
-  
-  
+
   return (
     <>
       <Card>
@@ -362,8 +358,7 @@ const getTimeList = ({ bookings, selectedDay, timeSlots, serviceDuration }: GetT
                             className="rounded-full"
                             onClick={() => {
                               setSelectedBarber(barber.id)
-                             
-                            }}
+                             }}
                           >
                             {barber.name}
                           </Button>
@@ -388,10 +383,7 @@ const getTimeList = ({ bookings, selectedDay, timeSlots, serviceDuration }: GetT
                         ))
                       ) : timeList.length > 0 ? (
                         timeList.map((timeSlot) => (
-                         timeSlot.hasConflict ? '' : (
-                          
-                         
-                          <Button
+                                                    <Button
                             key={timeSlot.id}
                             variant={
                               selectedTime === timeSlot.time
@@ -403,7 +395,7 @@ const getTimeList = ({ bookings, selectedDay, timeSlots, serviceDuration }: GetT
                           >
                             {timeSlot.time}
                           </Button>
-                        )))
+                        ))
                       ) : (
                         <p className="text-xs">
                           Não há horários disponíveis para este dia.
@@ -411,7 +403,6 @@ const getTimeList = ({ bookings, selectedDay, timeSlots, serviceDuration }: GetT
                       )}
                     </div>
                   )}
-
                   {selectedDate && (
                     <div className="p-5">
                       <BookingSummary
