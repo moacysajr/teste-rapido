@@ -1,11 +1,11 @@
 "use server"
-import { getServerSession } from "next-auth"
+ 
 import { db } from "../_lib/prisma"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
 import { revalidatePath } from "next/cache"
 
 export async function updateTimeSlotAvailability(id: string, isAvailable: boolean) {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user) {
         throw new Error("Usuário não autenticado")
     }

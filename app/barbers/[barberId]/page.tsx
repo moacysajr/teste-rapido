@@ -1,8 +1,8 @@
 import { FC } from "react"
-import { getServerSession } from "next-auth"
+ 
 import { redirect } from "next/navigation"
 import { validateBarber } from "@/app/_actions/validate-barber"
-import { authOptions } from "@/app/_lib/auth"
+import { auth } from "@/app/_lib/auth"
 
 import { Card, CardContent } from "@/app/_components/ui/card"
 import Link from "next/link"
@@ -26,7 +26,7 @@ interface BarberPageProps {
 }
 
 const BarberPage: FC<BarberPageProps> = async ({ params }) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     redirect("/login")
   }

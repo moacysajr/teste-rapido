@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+ 
+   import { auth } from "@/app/_lib/auth"
 import { redirect } from "next/navigation"
 import { salute } from "../_lib/salute"
 import { getTodayBookings } from "../_actions/get-today-bookings"
@@ -12,7 +12,7 @@ import { Booking } from "@/app/_types/schema"
 import BarbersManager from "../_components/adminComponents/BarbersManager"
 
 const Admin = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     redirect("/login")

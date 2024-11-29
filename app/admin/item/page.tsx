@@ -2,15 +2,15 @@ import { getItems } from "@/app/_actions/get-item"
 import CreateItemModal from "@/app/_components/adminComponents/CreateItemModal"
 import EditItem from "@/app/_components/adminComponents/EditItem"
 import { Separator } from "@/app/_components/ui/separator"
-import { authOptions } from "@/app/_lib/auth"
+import { auth } from "@/app/_lib/auth"
 import { db } from "@/app/_lib/prisma"
-import { getServerSession } from "next-auth"
+ 
 import { redirect } from "next/navigation"
 import { FC } from "react"
 
 
 const page: FC = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     redirect("/login")

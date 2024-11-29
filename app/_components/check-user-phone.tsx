@@ -1,11 +1,11 @@
 import { FC } from "react"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/_lib/auth"
+ 
+import { auth } from "@/app/_lib/auth"
 import { db } from "@/app/_lib/prisma"
 import AddPhoneBanner from "./add-phone-banner"
 
 const CheckUserPhone: FC = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     return null
@@ -21,7 +21,7 @@ const CheckUserPhone: FC = async () => {
     return null
   }
 
-  return <AddPhoneBanner userId={session.user.id} />
+  return <AddPhoneBanner userId={session.user.id!} />
 }
 
 export default CheckUserPhone

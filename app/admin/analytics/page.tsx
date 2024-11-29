@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { getAnalyticsData } from "@/app/_data/get-analytics"
-import { authOptions } from "@/app/_lib/auth"
-import { getServerSession } from "next-auth"
+import { auth } from "@/app/_lib/auth"
+ 
 import { redirect } from "next/navigation"
 import { MaisPedidos } from "@/app/_components/analytics-charts/servicos-mais-pedidos"
 import FaturamentoSemana from "@/app/_components/analytics-charts/faturamento-semana"
@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/app/_components/ui/c
 
 
 const page: FC = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   const analytics = await getAnalyticsData()
 
   if (!session?.user) {

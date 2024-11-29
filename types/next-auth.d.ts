@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import 'next-auth'
 import { DefaultUser } from 'next-auth'
 

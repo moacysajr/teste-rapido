@@ -1,12 +1,12 @@
 "use server";
-
-import { getServerSession } from "next-auth";
+import { auth } from "@/app/_lib/auth"
+ ;
 import { revalidatePath } from "next/cache";
-import { authOptions } from "../_lib/auth";
+   ;
 import { db } from "../_lib/prisma";
 
 export async function deleteBarber(id: string) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     return { success: false, message: "Usuário não autenticado" };

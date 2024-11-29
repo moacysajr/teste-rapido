@@ -7,12 +7,12 @@ import EditAdminClient from "@/app/_components/adminComponents/EditAdminClient"
 
 import { Badge } from "@/app/_components/ui/badge"
 import { Separator } from "@/app/_components/ui/separator"
-import { authOptions } from "@/app/_lib/auth"
-import { getServerSession } from "next-auth"
+import { auth } from "@/app/_lib/auth"
+ 
 import { redirect } from "next/navigation"
 
 export default async function Page() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     redirect("/login")

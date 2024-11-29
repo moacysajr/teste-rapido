@@ -1,9 +1,9 @@
 
 'use server'
 
-import { getServerSession } from "next-auth"
+import { auth } from "@/app/_lib/auth"
 import { db } from "../_lib/prisma"
-import { authOptions } from "../_lib/auth"
+   
 import { revalidatePath } from "next/cache"
 
 export async function updateBarbershop(id: string, data: {
@@ -14,7 +14,7 @@ export async function updateBarbershop(id: string, data: {
   description: string
   imageUrl: string
 }) {
-	const session = await getServerSession(authOptions)
+	const session = await auth()
   if (!session?.user) {
 		return { success: false, error: "Usuário não autenticado" }
   }

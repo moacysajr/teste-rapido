@@ -2,15 +2,15 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "../_lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
+   
 
 interface MakeAdminParams {
   userId: string,
 }
 
 export const makeAdmin = async (params: MakeAdminParams) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     throw new Error("Usuário não autenticado")
   }

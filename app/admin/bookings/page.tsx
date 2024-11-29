@@ -5,11 +5,11 @@ import RevalidateButton from "@/app/_components/RivalidateButton"
 import { Booking } from "@/app/_types/schema"
 import AdminBookingItem from "@/app/_components/adminComponents/AdminBookingItem"
 import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/_lib/auth"
+ 
+import { auth } from "@/app/_lib/auth"
 
 const Page: FC = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     redirect("/login")

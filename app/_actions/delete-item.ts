@@ -1,11 +1,11 @@
 "use server"
 import { db } from "../_lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
+   
 import { revalidatePath } from "next/cache"
 
 export const deleteItem = async (itemId : string) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     return { success: false, message: "Usuário não autenticado" }
   }

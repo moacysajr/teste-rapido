@@ -72,7 +72,7 @@ export async function createBarberFromUser(
     const newBarber = await db.barber.create({
       data: {
         name: existingUser.name || 'Nome não informado', // Usando o nome do usuário ou um valor padrão
-        email: existingUser.email,
+        email: existingUser.email!,
         imageUrl: existingUser.image || null,
         barbershopId: barbershopId,
       },

@@ -1,7 +1,7 @@
 "use server"
-
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
+ 
+   
 
 const getBaseUrl = () => {
   if (process.env.VERCEL_URL) {
@@ -17,7 +17,7 @@ const getBaseUrl = () => {
 
 export const sendMessage = async (phoneNumber: string, message: string) => {
   const EVOLUTIONTOKEN = process.env.EVOLUTIONTOKEN;
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     console.error("Tentativa de envio de mensagem sem autenticação")

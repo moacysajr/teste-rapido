@@ -4,12 +4,12 @@ import EditService from "@/app/_components/adminComponents/EditService"
 import { Button } from "@/app/_components/ui/button"
 import { Dialog, DialogTrigger } from "@/app/_components/ui/dialog"
 import { Separator } from "@/app/_components/ui/separator"
-import { authOptions } from "@/app/_lib/auth"
+
 import { db } from "@/app/_lib/prisma"
 import { BarbershopService } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime/library"
 import { Plus } from "lucide-react"
-import { getServerSession } from "next-auth"
+import { auth } from "@/app/_lib/auth"
 import { redirect } from "next/navigation"
 import { FC } from "react"
 
@@ -25,7 +25,7 @@ const convertDecimalToNumber = (decimal: Decimal | number): number => {
 }
 
 const page: FC = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     redirect("/login")

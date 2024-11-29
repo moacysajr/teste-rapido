@@ -1,11 +1,11 @@
 "use server"
 
 import { db } from "../_lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
+   
 
 export const UpdatePhone = async (UserId:string, Phone:string) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     throw new Error("Usuário não autenticado")
   }

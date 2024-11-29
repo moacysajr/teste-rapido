@@ -8,14 +8,14 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import { FaWhatsapp } from "react-icons/fa"
 import CheckUserPhone from "./_components/check-user-phone"
-import { getServerSession } from "next-auth"
-import { authOptions } from "./_lib/auth"
+
+import { auth } from "@/app/_lib/auth"
 import { findBarberByEmail } from "./_actions/validate-barber"
 import ProductItem from "./_components/product-item"
 import Cart from "./_components/Cart"
 
 const BarbershopPage = async () => {
-  const user = await getServerSession(authOptions)
+  const user = await auth()
   var BarberId = undefined
   const barbershop = await db.barbershop.findFirst({
     include: {

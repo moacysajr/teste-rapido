@@ -1,13 +1,13 @@
-import { getServerSession } from "next-auth"
+ 
 import Header from "../_components/header"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
 import { redirect } from "next/navigation"
 import BookingItem from "../_components/booking-item"
 import { getConfirmedBookings } from "../_data/get-confirmed-bookings"
 import { getConcludedBookings } from "../_data/get-concluded-bookings"
 
 const Bookings = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     redirect("/login")
   }

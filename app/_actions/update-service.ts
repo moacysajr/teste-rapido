@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "../_lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
+   
 import { Decimal } from '@prisma/client/runtime/library';
 
 interface UpdateServiceParams {
@@ -16,7 +16,7 @@ interface UpdateServiceParams {
 }
 
 export const updateService = async (service: UpdateServiceParams) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     throw new Error("Usuário não autenticado")
   }

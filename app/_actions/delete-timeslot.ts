@@ -1,11 +1,11 @@
 "use server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
+   
 import { db } from "../_lib/prisma"
 import { revalidatePath } from "next/cache"
 
 export async function deleteTimeSlot(id: string) {
-	const session = await getServerSession(authOptions)
+	const session = await auth()
   if (!session?.user) {
     return { success: false, message: "Usuário não autenticado" }
   }

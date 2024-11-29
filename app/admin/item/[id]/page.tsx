@@ -1,6 +1,6 @@
 import { FC } from "react"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/_lib/auth"
+ 
+import { auth } from "@/app/_lib/auth"
 import { db } from "@/app/_lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import UpdateItemForm from "@/app/_components/adminComponents/forms/UpdateItemForm" // Ajuste para o formulário de item
@@ -13,7 +13,7 @@ interface UpdateItemPageProps {
 }
 
 const UpdateItemPage: FC<UpdateItemPageProps> = async ({ params }) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     redirect("/login")

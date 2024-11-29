@@ -1,11 +1,11 @@
 "use server"
 
-import { getServerSession } from "next-auth"
+ 
 import { db } from "../_lib/prisma"
-import { authOptions } from "../_lib/auth"
+import { auth } from "@/app/_lib/auth"
 
 export const getConcludedBookings = async () => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) return []
   return db.booking.findMany({
     where: {
