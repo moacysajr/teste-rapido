@@ -3,16 +3,18 @@
 import { db } from "./prisma"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import GoogleProvider from "next-auth/providers/google"
-import { hashPassword,  } from "./bcrypt"
+
 import Credentials from "next-auth/providers/credentials"
 import { loginWhitePhone } from "../_actions/login-with-phone"
 import NextAuth from "next-auth"
 import { Adapter } from "next-auth/adapters"
+import { hashPassword } from "./bcrypt"
 
 
 
 
 export const { handlers, auth, signIn, signOut,  } = NextAuth({
+  debug:true,
   adapter: PrismaAdapter(db) as Adapter, 
   providers: [
     GoogleProvider({
@@ -23,37 +25,36 @@ export const { handlers, auth, signIn, signOut,  } = NextAuth({
     
     
     Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
       credentials: {
         phone: {},
         password: {},
       },
       authorize: async (credentials) => {
-        let user = null
-        const  phone = credentials!.phone as string
-        const  password = credentials!.password as string
- 
-        // logic to salt and hash password
-        const pwHash = await hashPassword(password)
- 
-       
-        // logic to verify if the user exists
-        console.log("chegou na pfunção-----------------------------")
-        user = await loginWhitePhone({phone, pwHash})
-        console.log("Passou na pfunção-----------------------------")
- 
-        if (!user) {
-          // No user found, so this is their first attempt to login
-          // Optionally, this is also the place you could do a user registration
-          throw new Error("Invalid credentials.")
+        if (!credentials?.phone || !credentials?.password) {
+          throw new Error("Phone and password are required");
         }
- 
-        // return user object with their profile data
-        return user
+    
+        const phone = credentials.phone as string
+        const password = credentials.password as string
+    
+        // Realiza a lógica de autenticação
+        const user = await loginWhitePhone({ phone, password });
+    
+        if (!user) {
+          throw new Error("Invalid credentials.");
+        }
+    
+        // Retorna o usuário com os campos esperados
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          phone: user.phone || undefined, // Garante compatibilidade
+          image: user.image,
+          isAdmin: user.isAdmin,
+        };
       },
-    }),
-
+    })
 
   
   ],
@@ -64,23 +65,34 @@ export const { handlers, auth, signIn, signOut,  } = NextAuth({
       const isAdmin = adminEmails.includes(user.email as string);
   
       // Verifica se o usuário já existe no banco
-      const existingUser = await db.user.findUnique({
-        where: { email: user.email as string },
+      const existingUser = await db.user.findFirst({
+        where: {
+          OR: [
+            { email: user.email || undefined }, // Evita verificar null ou undefined
+            { phone: user.phone || undefined }
+          ]
+        }
       });
   
+    
       if (!existingUser) {
+        let hashPasswords
+       if (user.password && user.phone){
+         hashPasswords = await hashPassword (user.password)
+       }
        
-        console.log("// Se não existe, cria um novo usuário") // Se não existe, cria um novo usuário
         await db.user.create({
           data: {
             id: user.id,
-            email: user.email as string,
+            email: user.email as string || undefined,
             name: user.name,
             isAdmin: isAdmin,
+            phone: user.phone || undefined,
+            password: hashPasswords|| undefined
           },
         });
       } else if (existingUser.id !== user.id) {
-        console.log("Caso o usuário exista mas os IDs sejam diferentes (conflito entre providers)")
+ 
         // Caso o usuário exista mas os IDs sejam diferentes (conflito entre providers)
         // Vincula o novo provider ao usuário existente
 
@@ -92,7 +104,7 @@ export const { handlers, auth, signIn, signOut,  } = NextAuth({
           data: { userId: existingUser.id },
         });
       }
-      console.log(" // Atualiza o campo `isAdmin` se necessário")
+    
       // Atualiza o campo `isAdmin` se necessário
       if (existingUser?.isAdmin !== isAdmin) {
         await db.user.update({
@@ -100,19 +112,21 @@ export const { handlers, auth, signIn, signOut,  } = NextAuth({
           data: { isAdmin },
         });
       }
-  
+     
       return true;
     },
-  
+    
     async session({ session, user }) {
       session.user = {
         ...session.user,
         id: user.id,
         isAdmin: user.isAdmin,
       };
-  
+    
       return session;
     },
   },
   secret: process.env.NEXT_AUTH_SECRET,
 })
+
+
