@@ -1,5 +1,3 @@
-
-
 import { db } from "./prisma"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import GoogleProvider from "next-auth/providers/google"
@@ -88,7 +86,7 @@ export const { handlers, auth, signIn, signOut,  } = NextAuth({
             name: user.name,
             isAdmin: isAdmin,
             phone: user.phone || undefined,
-            password: hashPasswords|| undefined
+            password: hashPasswords || undefined
           },
         });
       } else if (existingUser.id !== user.id) {
@@ -105,7 +103,7 @@ export const { handlers, auth, signIn, signOut,  } = NextAuth({
         });
       }
     
-      // Atualiza o campo `isAdmin` se necessário
+      // Atualiza o campo isAdmin se necessário
       if (existingUser?.isAdmin !== isAdmin) {
         await db.user.update({
           where: { email: user.email as string },
@@ -128,5 +126,3 @@ export const { handlers, auth, signIn, signOut,  } = NextAuth({
   },
   secret: process.env.NEXT_AUTH_SECRET,
 })
-
-
