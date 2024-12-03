@@ -6,6 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+  
+  "postinstall": "npm rebuild argon2",
+
+
     "lint": "next lint",
     "prepare": "husky && prisma generate"
   },
