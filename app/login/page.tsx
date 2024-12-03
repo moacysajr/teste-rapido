@@ -1,25 +1,25 @@
+export const dynamic = 'force-dynamic'; // Adiciona essa linha no início do arquivo
 
-import { FC } from "react"
-import { SignIn } from "../_components/login-form"
-import { auth } from "../_lib/auth"
+import { FC } from "react";
+import LoginForm from "../_components/login-form";
+import { auth } from "../_lib/auth";
 
-interface pageProps {}
+const Page: FC = async () => {
+  const user = await auth();
 
-const page: FC<pageProps> = async ({}) => {
+  if (user) {
+    return (
+      <div>
+        {JSON.stringify(user)}
+      </div>
+    );
+  }
 
-    const user = await auth()
-    console.log(user)
-    if (user ){
-      return<div>{
-      JSON.stringify(user)
-      }</div> 
-    }
-   
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <SignIn/>
+      <LoginForm />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default Page;
