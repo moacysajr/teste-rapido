@@ -1,25 +1,30 @@
+import { auth } from "../_lib/auth";
+import LoginForm from "../_components/login-form";
 
-import { FC } from "react"
-import { SignIn } from "../_components/login-form"
-import { auth } from "../_lib/auth"
+export default async function Page() {
+  let user;
 
-interface pageProps {}
+  try {
+    user = await auth();
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    user = null;
+  }
 
-const page: FC<pageProps> = async ({}) => {
+  if (user) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div>
+          <h1>Welcome</h1>
+          <pre>{JSON.stringify(user, null, 2)}</pre>
+        </div>
+      </div>
+    );
+  }
 
-    const user = await auth()
-    console.log(user)
-    if (user ){
-      return<div>{
-      JSON.stringify(user)
-      }</div> 
-    }
-   
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <SignIn/>
+      <LoginForm />
     </div>
-  )
+  );
 }
-
-export default page

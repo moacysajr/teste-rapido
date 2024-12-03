@@ -1,128 +1,58 @@
-import { db } from "./prisma"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import GoogleProvider from "next-auth/providers/google"
+import { findOrCreateUser } from "../services/user-service";
+import Credentials from "next-auth/providers/credentials";
+import NextAuth from "next-auth";
+import { db } from "./prisma"; // Certifique-se de ajustar o caminho corretamente
 
-import Credentials from "next-auth/providers/credentials"
-import { loginWhitePhone } from "../_actions/login-with-phone"
-import NextAuth from "next-auth"
-import { Adapter } from "next-auth/adapters"
-import { hashPassword } from "./bcrypt"
+const ADMIN_EMAILS = ["admin@example.com", "superuser@example.com"]; // Lista de emails de admin
 
-
-
-
-export const { handlers, auth, signIn, signOut,  } = NextAuth({
-  debug:true,
-  adapter: PrismaAdapter(db) as Adapter, 
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  debug: true,
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      allowDangerousEmailAccountLinking: true,
-    }),
-    
-    
     Credentials({
       credentials: {
-        phone: {},
-        password: {},
+        phone: { label: "Phone", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        if (!credentials?.phone || !credentials?.password) {
-          throw new Error("Phone and password are required");
+        if (!credentials) {
+          throw new Error("Missing credentials");
         }
-    
-        const phone = credentials.phone as string
-        const password = credentials.password as string
-    
-        // Realiza a lógica de autenticação
-        const user = await loginWhitePhone({ phone, password });
-    
-        if (!user) {
-          throw new Error("Invalid credentials.");
-        }
-    
-        // Retorna o usuário com os campos esperados
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          phone: user.phone || undefined, // Garante compatibilidade
-          image: user.image,
-          isAdmin: user.isAdmin,
+
+        const { phone, password } = credentials as {
+          phone: string;
+          password: string;
         };
-      },
-    })
 
-  
-  ],
-  
-  callbacks: {
-    async signIn({ user, account }) {
-      const adminEmails = ["rodrigohduarte9@gmail.com"];
-      const isAdmin = adminEmails.includes(user.email as string);
-  
-      // Verifica se o usuário já existe no banco
-      const existingUser = await db.user.findFirst({
-        where: {
-          OR: [
-            { email: user.email || undefined }, // Evita verificar null ou undefined
-            { phone: user.phone || undefined }
-          ]
-        }
-      });
-  
-    
-      if (!existingUser) {
-        let hashPasswords
-       if (user.password && user.phone){
-         hashPasswords = await hashPassword (user.password)
-       }
-       
-        await db.user.create({
-          data: {
+        const trimmedPhone = phone.trim();
+        const trimmedPassword = password.trim();
+
+        try {
+          const user = await findOrCreateUser(trimmedPhone, trimmedPassword);
+
+          // Se o email do usuário estiver na lista de admin, atualize para admin
+          if (user.email && ADMIN_EMAILS.includes(user.email)) {
+            await db.user.update({
+              where: { id: user.id },
+              data: { isAdmin: true },
+            });
+
+            // Atualiza o campo `isAdmin` do usuário no objeto retornado
+            user.isAdmin = true;
+          }
+
+          return {
             id: user.id,
-            email: user.email as string || undefined,
+            email: user.email,
             name: user.name,
-            isAdmin: isAdmin,
             phone: user.phone || undefined,
-            password: hashPasswords || undefined
-          },
-        });
-      } else if (existingUser.id !== user.id) {
- 
-        // Caso o usuário exista mas os IDs sejam diferentes (conflito entre providers)
-        // Vincula o novo provider ao usuário existente
-
-        await db.account.update({
-          where: { provider_providerAccountId: { 
-            provider: account!.provider, 
-            providerAccountId: account!.providerAccountId 
-          }},
-          data: { userId: existingUser.id },
-        });
-      }
-    
-      // Atualiza o campo isAdmin se necessário
-      if (existingUser?.isAdmin !== isAdmin) {
-        await db.user.update({
-          where: { email: user.email as string },
-          data: { isAdmin },
-        });
-      }
-     
-      return true;
-    },
-    
-    async session({ session, user }) {
-      session.user = {
-        ...session.user,
-        id: user.id,
-        isAdmin: user.isAdmin,
-      };
-    
-      return session;
-    },
-  },
+            image: user.image,
+            isAdmin: user.isAdmin,
+          };
+        } catch (error) {
+          throw new Error('error.message || An error occurred during authentication');
+        }
+      },
+    }),
+  ],
   secret: process.env.NEXT_AUTH_SECRET,
-})
+});

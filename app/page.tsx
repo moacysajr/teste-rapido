@@ -7,7 +7,7 @@ import { MapPinIcon, MenuIcon, StarIcon } from "lucide-react"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import { FaWhatsapp } from "react-icons/fa"
-import CheckUserPhone from "./_components/check-user-phone"
+
 
 import { auth } from "@/app/_lib/auth"
 import { findBarberByEmail } from "./_actions/validate-barber"
@@ -36,7 +36,7 @@ const BarbershopPage = async () => {
 
   return (
     <div>
-      {user && <CheckUserPhone />}
+  
 
       {/* IMAGEM vercelzin*/}
       <div className="relative h-[250px] w-full">
